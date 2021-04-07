@@ -28,7 +28,6 @@ print(e*d%(phi_n))
 '''
 
 def generate_primes(length):
-    tic = time.time()
 
     while True:
         prime_candidate = secrets.randbits(length)
