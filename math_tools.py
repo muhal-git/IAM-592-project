@@ -80,7 +80,7 @@ greater k means greater accuracy of the test
 input: n, k(number of tests, equals to 5 as default)
 output:False(if n is not prime) or True(if n is (probably) prime)
 '''
-def isPrime( n, k=5):
+def isPrime( n, k=64):
 
     # Corner cases
     if (n <= 1 or n == 4):
