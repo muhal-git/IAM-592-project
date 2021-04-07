@@ -77,7 +77,7 @@ def miiller_rabin_test(d, n):
 isPrime(n,k) looks for primality of n using miiller_rabin_test() function k-times
 greater k means greater accuracy of the test--->Error of this test is E(k)= 1/(4^k) 
 
-input: n, k(number of tests, equals to 5 as default)
+input: n, k(number of tests, equals to 64 as default)
 output:False(if n is not prime) or True(if n is (probably) prime)
 '''
 def isPrime( n, k=64):
