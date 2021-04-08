@@ -81,20 +81,18 @@ input: n, k(number of tests, equals to 64 as default)
 output:False(if n is not prime) or True(if n is (probably) prime)
 '''
 def isPrime( n, k=64):
-
-    # Corner cases
-    if (n <= 1 or n == 4):
+	
+    if (n <= 1 or n%2 == 0):
         return False;
     if (n <= 3):
         return True;
 
-    # Find r such that n =
-    # 2^d * r + 1 for some r >= 1
+    # finding d such that n = n-1 = 2^(d)*k
     d = n - 1;
     while (d % 2 == 0):
         d //= 2;
-
-    # Iterate given nber of 'k' times
+	
+	
     for i in range(k):
         if (miiller_rabin_test(d, n) == False):
             return False;
