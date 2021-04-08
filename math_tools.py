@@ -53,7 +53,7 @@ output:False(if n is not prime) or True(if n is (probably) prime)
 def miiller_rabin_test(d, n):
 
     # take a random number from [2,...,n-2]
-    a = 2 + secrets.randbelow(n-4)
+    a = 2 + secrets.randbelow(n-3)
 
     # applying Miller-Rabin primality test
     x = pow(a, d, n);
