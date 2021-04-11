@@ -10,7 +10,7 @@ comments will be added soon...
 def rand_matrix_gen(dimension):
 
     char_sequence=[]
-    for i in range(256):
+    for i in range(255):
         char_sequence.append(i+1)
 
 
