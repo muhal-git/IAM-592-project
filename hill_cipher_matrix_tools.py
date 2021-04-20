@@ -4,9 +4,7 @@ import math_tools
 from sympy import Matrix
 import sympy
 import time
-'''
-comments will be added soon...
-'''
+
 def rand_matrix_gen(dimension):
 
     char_sequence=[]
