@@ -4,6 +4,7 @@ import random  #for generating random numbers(not cryptographically secure)
 import time
 '''
 k=9
+
 i=0
 while True:
 	if k<=10:
