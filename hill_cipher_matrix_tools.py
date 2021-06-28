@@ -79,7 +79,7 @@ def gen_hill_matrices(dimension):
         try:
             A_1=rand_matrix_gen(dimension)
             B_1=gen_key(A_1)
-            print("everything is OK",i)
+            print("Hill Cipher Matrix Generation Completed !",i)
             break
         except:
             #print("smthng gone wrong")
@@ -96,6 +96,7 @@ def hill_cipher(A,A_inverse,mode,message,head_padding=0,tail_padding=0):
         if mode=="encrypt":
 
             if ((len(message))%(block_size))!=0:
+                message = "\n--------NEW MESSAGE--------\n\n" + message + "\n\n-----END OF THE MESSAGE-----\nRandom Padding ignore this part:"
                 padding_size = block_size - len(message)%block_size
                 for i in range(padding_size):
                     padding = chr(secrets.randbits(8))
@@ -113,7 +114,7 @@ def hill_cipher(A,A_inverse,mode,message,head_padding=0,tail_padding=0):
                 for k in range(block_size):
                     cipher_text = cipher_text + chr(C[k][0])
             try:
-                return cipher_text,padding_size
+                return cipher_text
             except:
                 return cipher_text
 
