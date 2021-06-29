@@ -1,95 +1,141 @@
-import secrets #for generating cryptographically! secure random integers
-import random  #for generating random numbers(not cryptographically secure)
+import secrets
+import numpy as np
+import math_tools
+from sympy import Matrix
+import sympy
+import time
 
-'''
-egcd(..,..) recursively calculates greatest common divisor(gcd) of integers a and b
-Also it caluculates x&y such that gcd(a,b) = x*a + y*b
-This function also can be use for finding inverse of a in modulo b
-input: a, b
-output:gcd(a,b), x, y (such that gcd(a,b) = x*a + y*b)
-'''
-def egcd(a, b):
+def rand_matrix_gen(dimension):
 
-    # handling base Case
-    if a == 0 :
-        return b, 0, 1
-
-    gcd, x1, y1 = egcd(b%a, a)
-
-    # updating x and y recursively
-    x = y1 - (b//a) * x1
-    y = x1
-
-    return gcd, x, y
-
-'''
-Using egcd(..,..),inverse_mod(..,..) calculates and returns inverse of a in mod b
-input: a, b
-output:inverse(say it is inv) of a in modulo b ( so that (a*inv)%b=1 )
-'''
-def inverse_mod(a,b):
-
-    #handles the case gcd(a,b)=1, since if not there is no inverse of a in mod b
-    if egcd(a,b)[0]!=1:
-        print("inverse of",a,"in modulo",b,"does not exist !")
-        return False
-
-    inverse_of_a_in_mod_b = egcd(a,b)[1]
-
-    if inverse_of_a_in_mod_b < 0:
-        inverse_of_a_in_mod_b+=b
-    return inverse_of_a_in_mod_b
-
-'''
-miiller_rabin_test(d,n) makes Miller-Rabin primality test, it is a probabilistic
-primality test, miillerTest(d,n) function looks for primality of integr n,
-such that n - 1 = (2^d)*k
-input: d, n ( so that n-1 = 2^(d)*k for some odd k )
-output:False(if n is not prime) or True(if n is (probably) prime)
-'''
-def miiller_rabin_test(d, n):
-
-    # take a random number from [2,...,n-2]
-    a = 2 + secrets.randbelow(n-3)
-
-    # applying Miller-Rabin primality test
-    x = pow(a, d, n);
-    if (x == 1 or x == n - 1):
-        return True;
-
-    while (d != n - 1):
-        x = (x * x) % n;
-        d *= 2;
-
-        if (x == 1):
-            return False;
-        if (x == n - 1):
-            return True;
-
-    return False;
+    char_sequence=[]
+    for i in range(255):
+        char_sequence.append(i+1)
 
 
+    flag=True
+    k=0
+    while flag:
+        flag_1=False
+        flag_2=False
+        flag_3=True
 
-'''
-isPrime(n,k) looks for primality of n using miiller_rabin_test() function k-times
-greater k means greater accuracy of the test--->Error of this test is E(k)= 1/(4^k) 
-input: n, k(number of tests, equals to 64 as default)
-output:False(if n is not prime) or True(if n is (probably) prime)
-'''
-def isPrime( n, k=64):
-	
-    if (n <= 1 or n%2 == 0):
-        return False;
-    if (n <= 3):
-        return True;
+        """k+=1
+        if k%20000==0:
+            print("We are at",k,"th trying...")
+            """
 
-    # finding d such that n = n-1 = 2^(d)*k
-    d = n - 1;
-    while (d % 2 == 0):
-        d //= 2;
-	
-	
+        rand_nums=[] #an array for keeping entries of matrix for encryption
+        for i in range(dimension*dimension):
+            # randomly generating entries of encryption matrix
+            rand_nums.append(secrets.choice(char_sequence))
+
+        A=np.zeros(shape=(dimension,dimension))
+        pivot=0
+        for i in range(dimension):
+            for j in range(dimension):
+                A[i][j]=int(rand_nums[pivot])
+                pivot=pivot+1
+
+
+        det=np.linalg.det(A)
+        '''
+        if int(det)!=det:
+            continue'''
+        if math_tools.egcd(det,256)[0]!=1:
+            continue
+
+        return A
+
+def gen_key(A):
+    k=10
     for i in range(k):
-        if (miiller_rabin_test(d, n) == False):
-            return False;
-    return True;
+        k=k-1
+        try:
+            block_size=A.shape[1]
+            dimension=block_size
+            #A=rand_matrix_gen(dimension)
+            A=np.round(A).astype(int)
+
+            mod_matrix=Matrix()
+
+            for i in range(dimension):
+                mod_matrix=mod_matrix.row_insert(i,Matrix([A[i]]))
+            try:
+                A_inv=mod_matrix.inv_mod(256)
+            except:
+                continue
+                k=10
+            t=np.dot(mod_matrix,mod_matrix.inv_mod(256))%256
+
+
+        except:
+            print("sell")
+            continue
+    return A_inv
+
+def gen_hill_matrices(dimension):
+    i=0
+    while(True):
+        i+=1
+        try:
+            A_1=rand_matrix_gen(dimension)
+            B_1=gen_key(A_1)
+            print("Hill Cipher Matrix Generation Completed !",i)
+            break
+        except:
+            #print("smthng gone wrong")
+            continue
+    return A_1,B_1
+
+def hill_cipher(A,A_inverse,mode,message,head_padding=0,tail_padding=0):
+
+    block_size=A.shape[1]
+
+
+    try:
+
+        if mode=="encrypt":
+
+            if ((len(message))%(block_size))!=0:
+                message = "\n--------NEW MESSAGE--------\n\n" + message + "\n\n-----END OF THE MESSAGE-----\n"
+                padding_size = block_size - len(message)%block_size
+                for i in range(padding_size):
+                    padding = chr(secrets.randbits(8))
+                    message = message + padding
+
+            cipher_text=""
+            pivot=0
+            for i in range(int(len(message)/block_size)):
+                B=Matrix()
+                for j in range(block_size):
+                    B = B.row_insert(j,Matrix([ord(message[pivot])]))
+                    pivot+=1
+                C = np.dot(A,B).astype(int)%256
+                #print(C)
+                for k in range(block_size):
+                    cipher_text = cipher_text + chr(C[k][0])
+            try:
+                return cipher_text
+            except:
+                return cipher_text
+
+        elif mode=="decrypt":
+            plain_text=""
+            pivot=0
+
+            for i in range(int(len(message)/block_size)):
+                cipher_matrix=Matrix()
+                for j in range(block_size):
+                    cipher_matrix = cipher_matrix.row_insert(j,Matrix([ord(message[pivot])]))
+                    pivot+=1
+                plain_matrix = np.dot(A_inverse,cipher_matrix).astype(int)%256
+                for k in range(block_size):
+                    plain_text = plain_text + chr(plain_matrix[k][0])
+                #print("inside function",plain_text)
+            return plain_text
+
+        else:
+            raise Exception("Cipher mode is not right!")
+
+    except:
+        raise Exception("Something gone wrong while making encryption/decryption !")
